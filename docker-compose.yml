@@ -1,0 +1,44 @@
+services:
+  pg:
+    image: bitnami/postgresql:latest
+    ports:
+      - '5436:5432'
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=projetofinal1
+    volumes:
+      - './docker:/docker-entrypoint-initdb.d'
+    networks:
+      - projetopos-network
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    volumes:
+      - ./server:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
+    ports:
+      - "3334:3333"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=docker
+      - DB_PASSWORD=docker
+      - DB_NAME=projetofinal1
+      - PORT=3334
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - pg
+    networks:
+      - projetopos-network
+    restart: unless-stopped
+volumes:
+  postgres_data:
+
+networks:
+  projetopos-network:
+    driver: bridge

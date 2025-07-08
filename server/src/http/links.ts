@@ -43,7 +43,6 @@ export async function saveLink(
 
 }
 
-
 export async function deleteLink(
 	request: FastifyRequest,
 	reply: FastifyReply,
@@ -64,6 +63,36 @@ export async function deleteLink(
 		}
 
 		return reply.status(200).send("Link deleted successfully")
+	} catch (error) {
+		console.error("Error saving link:", error);
+		return reply.status(500).send({
+			error: "Internal Server Error AA " + error,
+		});
+	}
+}
+
+export async function getByShortCode(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	const deleteLinkParams = z.object({
+		shortCode: z.string().min(1),
+	})
+	const { shortCode } = deleteLinkParams.parse(request.params)
+	try {
+
+		const result = await db
+			.select()
+			.from(schema.links)
+			.where(eq(schema.links.shortUrl, shortCode))
+
+		if (result.length === 0) {
+			return reply.status(404).send({ error: "Link not found" })
+		}
+
+		return reply.status(200).send({
+			link: result[0],
+		})
 	} catch (error) {
 		console.error("Error saving link:", error);
 		return reply.status(500).send({

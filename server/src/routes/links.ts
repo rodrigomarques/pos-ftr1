@@ -1,7 +1,19 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { getHealth } from "../http/health.ts";
-import { deleteLink, saveLink } from "@/http/links";
+import { deleteLink, getByShortCode, saveLink } from "@/http/links";
+
+export const linkSchema = z.object({
+  id: z.string().uuid(),
+  originalUrl: z.string().url(),
+  shortUrl: z.string().min(1).max(100),
+  accessCount: z.number().int().nonnegative(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+// Tipo TypeScript inferido
+export type Link = z.infer<typeof linkSchema>
 
 export const linksRoute: FastifyPluginAsyncZod = async (server) => {
   server.post(
@@ -39,19 +51,6 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
         summary: "Delete a Link Route",
         response: {
           200: z.string(),
-        },
-      },
-    },
-    deleteLink,
-  );
-
-  server.get(
-    "/links/:shortCode",
-    {
-      schema: {
-        summary: "Find a Link Route",
-        response: {
-          200: z.string(),
           400: z.object({
             error: z.literal('Bad Request'),
             details: z.array(z.any())
@@ -65,7 +64,30 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
         },
       },
     },
-    getHealth,
+    deleteLink,
+  );
+
+  server.get(
+    "/links/:shortCode",
+    {
+      schema: {
+        summary: "Find a Link Route",
+        response: {
+          200: z.object({ link: linkSchema }),
+          400: z.object({
+            error: z.literal('Bad Request'),
+            details: z.array(z.any())
+          }),
+          500: z.object({
+            error: z.string()
+          }),
+          404: z.object({
+            error: z.string()
+          }),
+        },
+      },
+    },
+    getByShortCode,
   );
 
   server.get(

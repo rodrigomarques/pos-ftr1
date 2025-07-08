@@ -1,7 +1,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { getHealth } from "../http/health.ts";
-import { saveLink } from "../http/links.ts";
+import { deleteLink, saveLink } from "@/http/links";
 
 export const linksRoute: FastifyPluginAsyncZod = async (server) => {
   server.post(
@@ -42,7 +42,7 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
         },
       },
     },
-    getHealth,
+    deleteLink,
   );
 
   server.get(
@@ -52,6 +52,16 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
         summary: "Find a Link Route",
         response: {
           200: z.string(),
+          400: z.object({
+            error: z.literal('Bad Request'),
+            details: z.array(z.any())
+          }),
+          500: z.object({
+            error: z.string()
+          }),
+          404: z.object({
+            error: z.string()
+          }),
         },
       },
     },

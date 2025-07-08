@@ -1,8 +1,8 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "./../db/index.ts"
 import z from "zod";
-//import { schema } from "./../db/schemas/index.ts";
 import { schema } from "@/db/schemas/index";
+import { eq } from "drizzle-orm";
 
 
 export const createLinkSchema = z.object({
@@ -16,7 +16,6 @@ export async function saveLink(
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) {
-	console.log("Request body:", request.body);
 	try {
 		const { url, shortCode } = createLinkSchema.parse(request.body)
 		const generatedShortCode = shortCode ?? generateRandomCode()
@@ -35,6 +34,36 @@ export async function saveLink(
 			originalUrl: link.originalUrl,
 			shortCode: link.shortUrl
 		})
+	} catch (error) {
+		console.error("Error saving link:", error);
+		return reply.status(500).send({
+			error: "Internal Server Error AA " + error,
+		});
+	}
+
+}
+
+
+export async function deleteLink(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	const deleteLinkParams = z.object({
+		shortCode: z.string().min(1),
+	})
+	const { shortCode } = deleteLinkParams.parse(request.params)
+	try {
+
+		const deleted = await db
+			.delete(schema.links)
+			.where(eq(schema.links.shortUrl, shortCode))
+			.returning()
+
+		if (deleted.length === 0) {
+			return reply.status(404).send({ error: "Link not found" })
+		}
+
+		return reply.status(200).send("Link deleted successfully")
 	} catch (error) {
 		console.error("Error saving link:", error);
 		return reply.status(500).send({

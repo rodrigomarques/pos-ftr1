@@ -17,6 +17,9 @@ importers:
       '@fastify/cors':
         specifier: ^11.0.1
         version: 11.0.1
+      csv-stringify:
+        specifier: ^6.5.2
+        version: 6.5.2
       dotenv:
         specifier: ^17.0.1
         version: 17.0.1
@@ -870,6 +873,9 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
+
+  csv-stringify@6.5.2:
+    resolution: {integrity: sha512-RFPahj0sXcmUyjrObAK+DOWtMvMIFV328n4qZJhgX3x2RqkQgOTU2mCUmiFR0CzM6AzChlRSUErjiJeEt8BaQA==}
 
   debug@4.4.1:
     resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
@@ -2499,6 +2505,8 @@ snapshots:
   cookie@1.0.2: {}
 
   create-require@1.1.1: {}
+
+  csv-stringify@6.5.2: {}
 
   debug@4.4.1(supports-color@5.5.0):
     dependencies:

@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { db } from "./../db/index.ts"
+import { db, pg } from "@/db/index.ts"
 import z from "zod";
 import { schema } from "@/db/schemas/index";
-import { eq, sql } from "drizzle-orm";
-
+import { eq } from "drizzle-orm";
+import { stringify } from "csv-stringify";
 
 export const createLinkSchema = z.object({
 	url: z.string().url(),
@@ -154,6 +154,72 @@ export async function incrementCount(
 
 		return reply.status(200).send({
 			link: updated[0],
+		})
+
+	} catch (error) {
+		console.error("Error saving link:", error);
+		return reply.status(500).send({
+			error: "Internal Server Error AA " + error,
+		});
+	}
+
+}
+import { PassThrough, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { uploadFileToStorage } from "@/storage/upload-file-to-storage.ts";
+
+export async function exportLinks(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	try {
+
+		const { sql, params } = db
+			.select()
+			.from(schema.links)
+			.toSQL();
+
+		const cursor = pg.unsafe(sql, params as string[]).cursor(2);
+		const csv = stringify({
+			delimiter: ",",
+			header: true,
+			columns: [
+				{ key: "id", header: "ID" },
+				{ key: "original_url", header: "Name" },
+				{ key: "short_url", header: "URL" },
+				{ key: "access_count", header: "Count" },
+				{ key: "created_at", header: "Created at" },
+				{ key: "updated_at", header: "Uploaded at" },
+			],
+		});
+		const uploadToStorageStream = new PassThrough();
+		const convertToCSVPipeline = pipeline(
+			cursor,
+			new Transform({
+				objectMode: true,
+				transform(chunks: unknown[], encoding, callback) {
+					for (const chunk of chunks) {
+						this.push(chunk);
+					}
+
+					callback();
+				},
+			}),
+			csv,
+			uploadToStorageStream,
+		);
+
+		const uploadToStorage = uploadFileToStorage({
+			contentType: "text/csv",
+			folder: "downloads",
+			fileName: `${new Date().toISOString()}-links.csv`,
+			contentStream: uploadToStorageStream,
+		});
+
+		const [{ url }] = await Promise.all([uploadToStorage, convertToCSVPipeline]);
+
+		return reply.status(200).send({
+			url: url,
 		})
 
 	} catch (error) {

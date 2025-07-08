@@ -1,7 +1,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { getHealth } from "../http/health.ts";
-import { deleteLink, getAll, getByShortCode, incrementCount, saveLink } from "@/http/links";
+import { deleteLink, exportLinks, getAll, getByShortCode, incrementCount, saveLink } from "@/http/links";
 
 export const linkSchema = z.object({
   id: z.string().uuid(),
@@ -129,32 +129,18 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
     incrementCount,
   );
 
-  server.post(
-    "/links/export",
-    {
-      schema: {
-        summary: "Export Link Route",
-        body: z.object({
-          csvUrl: z.string()
-        }),
-        response: {
-          200: z.string(),
-        },
-      },
-    },
-    getHealth,
-  );
-
   server.get(
     "/links/export",
     {
       schema: {
         summary: "Export Link Route",
         response: {
-          200: z.string(),
+          200: z.object({
+            url: z.string().url(),
+          }),
         },
       },
     },
-    getHealth,
+    exportLinks,
   );
 };

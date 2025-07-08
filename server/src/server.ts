@@ -18,7 +18,6 @@ export function buildServer() {
 	app.setErrorHandler((error, request, reply) => {
 		console.error("Error handler:", error);
 		if (hasZodFastifySchemaValidationErrors(error)) {
-			console.error("NOT ZOD:", error);
 			return reply.status(400).send({
 				error: 'Bad Request',
 				details: error.validation

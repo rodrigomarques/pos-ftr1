@@ -102,6 +102,28 @@ export async function getByShortCode(
 
 }
 
+export async function getAll(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	try {
+
+		const result = await db
+			.select()
+			.from(schema.links)
+
+		return reply.status(200).send({
+			links: result,
+		})
+	} catch (error) {
+		console.error("Error saving link:", error);
+		return reply.status(500).send({
+			error: "Internal Server Error AA " + error,
+		});
+	}
+
+}
+
 function generateRandomCode(length = 6) {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("")

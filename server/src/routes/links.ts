@@ -1,7 +1,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { getHealth } from "../http/health.ts";
-import { deleteLink, getByShortCode, saveLink } from "@/http/links";
+import { deleteLink, getAll, getByShortCode, saveLink } from "@/http/links";
 
 export const linkSchema = z.object({
   id: z.string().uuid(),
@@ -95,16 +95,15 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         summary: "List all Link Route",
-        querystring: z.object({
-          page: z.coerce.number().optional().default(1),
-          pageSize: z.coerce.number().optional().default(20),
-        }),
         response: {
-          200: z.string(),
+          200: z.object({ links: z.array(linkSchema) }),
+          500: z.object({
+            error: z.string()
+          }),
         },
       },
     },
-    getHealth,
+    getAll,
   );
 
   server.post(

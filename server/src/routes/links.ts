@@ -1,7 +1,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { getHealth } from "../http/health.ts";
-import { deleteLink, getAll, getByShortCode, saveLink } from "@/http/links";
+import { deleteLink, getAll, getByShortCode, incrementCount, saveLink } from "@/http/links";
 
 export const linkSchema = z.object({
   id: z.string().uuid(),
@@ -104,6 +104,29 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
       },
     },
     getAll,
+  );
+
+  server.get(
+    "/links/:shortCode/increment",
+    {
+      schema: {
+        summary: "Increment a count Link",
+        response: {
+          200: z.object({ link: linkSchema }),
+          400: z.object({
+            error: z.literal('Bad Request'),
+            details: z.array(z.any())
+          }),
+          500: z.object({
+            error: z.string()
+          }),
+          404: z.object({
+            error: z.string()
+          }),
+        },
+      },
+    },
+    incrementCount,
   );
 
   server.post(

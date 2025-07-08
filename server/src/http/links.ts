@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "./../db/index.ts"
 import z from "zod";
 import { schema } from "@/db/schemas/index";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 
 export const createLinkSchema = z.object({
@@ -115,6 +115,47 @@ export async function getAll(
 		return reply.status(200).send({
 			links: result,
 		})
+	} catch (error) {
+		console.error("Error saving link:", error);
+		return reply.status(500).send({
+			error: "Internal Server Error AA " + error,
+		});
+	}
+
+}
+
+export async function incrementCount(
+	request: FastifyRequest,
+	reply: FastifyReply,
+) {
+	const deleteLinkParams = z.object({
+		shortCode: z.string().min(1),
+	})
+	const { shortCode } = deleteLinkParams.parse(request.params)
+	try {
+
+		const result = await db
+			.select()
+			.from(schema.links)
+			.where(eq(schema.links.shortUrl, shortCode))
+
+		if (result.length === 0) {
+			return reply.status(404).send({ error: "Link not found" })
+		}
+
+		const updated = await db
+			.update(schema.links)
+			.set({
+				accessCount: result[0].accessCount + 1,
+				updatedAt: new Date(),
+			})
+			.where(eq(schema.links.id, result[0].id))
+			.returning()
+
+		return reply.status(200).send({
+			link: updated[0],
+		})
+
 	} catch (error) {
 		console.error("Error saving link:", error);
 		return reply.status(500).send({

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file .env src/infra/http/server.ts",
-    "start:dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/server.ts\"",
+    "start:deverror": "nodemon --watch src --ext ts --exec \"ts-node-esm --project tsconfig.json -r tsconfig-paths/register src/server.ts\"",
+    "start:dev": "nodemon --legacy-watch --delay 500ms --watch src --ext ts --exec tsx src/server.ts",
+    "start:dev:cooret": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/server.ts\"",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate",
     "build": "tsc",

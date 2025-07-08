@@ -7,6 +7,7 @@ import {
 } from "fastify-type-provider-zod";
 
 import { indexRoute } from "./routes/index.ts";
+import { linksRoute } from "./routes/links.ts";
 
 export function buildServer() {
 	const app = fastify();
@@ -15,21 +16,24 @@ export function buildServer() {
 	app.setSerializerCompiler(serializerCompiler);
 
 	app.setErrorHandler((error, request, reply) => {
+		console.error("Error handler:", error);
 		if (hasZodFastifySchemaValidationErrors(error)) {
+			console.error("NOT ZOD:", error);
 			return reply.status(400).send({
-				message: "Validation error",
-				issues: error.validation,
+				error: 'Bad Request',
+				details: error.validation
 			});
 		}
 
 		console.error(error);
-		return reply.status(500).send({ message: "Internal server error." });
+		return reply.status(500).send({ error: "Internal server error A." });
 	});
 
 	app.register(fastifyCors, { origin: "*" });
 
 	// Registra suas rotas aqui
 	app.register(indexRoute);
+	app.register(linksRoute);
 
 	return app;
 }

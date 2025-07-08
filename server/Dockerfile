@@ -1,44 +1,16 @@
-# Imagem mais leve
-FROM node:20-alpine3.21 AS base
-
-RUN npm i -g pnpm
-
-FROM base AS dependencies
-
-#Directório de trabalho
-WORKDIR /usr/src/app
-
-# Copia os arquivos de configuração do projeto
-COPY package.json pnpm-lock.yaml ./
-
-# Copia o código fonte do projeto
-RUN pnpm install
-
-FROM base AS build
+# Estágio de desenvolvimento
+FROM node:22-alpine AS development
 
 WORKDIR /usr/src/app
 
-# Copia o restante do código fonte do projeto
-COPY . .
-# Copiar o node_modules da imagem de dependências
-# Isso é necessário para que o build funcione corretamente
-COPY --from=dependencies /usr/src/app/node_modules ./node_modules
+COPY package*.json ./
 
-RUN pnpm build
-RUN pnpm prune --prod
-RUN pnpm add -D nodemon
+RUN npm install
 
+COPY . ./
 
-#Imagem de execução
-FROM node:20-alpine3.21 AS deploy
-
-USER 1000
-
-WORKDIR /usr/src/app
-
-COPY --from=build /usr/src/app/dist ./dist
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/package.json ./package.json
+# Instala o ts-node-dev para hot-reload
+RUN npm install -g ts-node-dev nodemon
 
 ENV CLOUDFLARE_ACCOUNT_ID="91ce49d61822d7880ffd800a9089c1b1"
 ENV CLOUDFLARE_ACCESS_KEY_ID="55f79f01d6fa8ffc264ef77fcd322b95"
@@ -46,8 +18,9 @@ ENV CLOUDFLARE_SECRET_ACCESS_KEY="c2f8791d3da87725930d56078e0534558582fa0bc48f82
 ENV CLOUDFLARE_BUCKET="upload-server"
 ENV CLOUDFLARE_PUBLIC_URL="https://pub-cbdaaf82413c40679980f39edbf35598.r2.dev"
 
+# Expõe a porta do servidor Fastify
 EXPOSE 3333
 
-CMD ["pnpm", "run", "start:dev"]
-#CMD ["node", "dist/server.mjs" ]
-#CMD ["dist/server.mjs" ]
+# Comando para rodar em modo watch
+#CMD ["ts-node-dev", "--respawn", "--transpile-only", "src/server.ts"]
+CMD ["npm", "run", "start:dev"]

@@ -86,38 +86,46 @@ export default function ListLink() {
         </button>
       </div>
 
-      {data && data.length === 0 && (
-        <div className="text-center text-gray-500">
-          <p className="mb-4">Nenhum link encontrado.</p>
-          <p className="text-sm">Crie um novo link para começar.</p>
-        </div>
-      )}
-
-      {data && data.map((link) => (
-        <div className="mb-6 pb-6 border-b border-gray-200" key={link.id}>
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-medium text-indigo-600">{env.VITE_FRONTEND_URL}{link.shortUrl}</h3>
-            <div className="flex gap-2 items-center">
-              <div className="text-sm text-gray-500 mr-3">
-                <span>{countAcessos(link.accessCount)}</span>
-              </div>
-              <button
-                className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-400"
-                onClick={() => {
-                  navigator.clipboard.writeText(`${env.VITE_FRONTEND_URL}${link.shortUrl}`);
-                  toast.success('Link copiado para a área de transferência!');
-                }}
-              >
-                <FiCopy className="text-lg cursor-pointer" />
-              </button>
-              <button onClick={() => handlerDelete(link)} className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
-                <FiTrash2 className="text-lg cursor-pointer" />
-              </button>
-            </div>
+      <div
+        className="max-h-[500px] overflow-y-auto pr-2"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#6366f1 #e5e7eb",
+        }}
+      >
+        {data && data.length === 0 && (
+          <div className="text-center text-gray-500">
+            <p className="mb-4">Nenhum link encontrado.</p>
+            <p className="text-sm">Crie um novo link para começar.</p>
           </div>
-          <p className="text-gray-600 mb-4">{link.originalUrl}</p>
-        </div>
-      ))}
+        )}
+
+        {data && data.map((link) => (
+          <div className="mb-6 pb-6 border-b border-gray-200" key={link.id}>
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-lg font-medium text-indigo-600">{env.VITE_FRONTEND_URL}{link.shortUrl}</h3>
+              <div className="flex gap-2 items-center">
+                <div className="text-sm text-gray-500 mr-3">
+                  <span>{countAcessos(link.accessCount)}</span>
+                </div>
+                <button
+                  className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-400"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${env.VITE_FRONTEND_URL}${link.shortUrl}`);
+                    toast.success('Link copiado para a área de transferência!');
+                  }}
+                >
+                  <FiCopy className="text-lg cursor-pointer" />
+                </button>
+                <button onClick={() => handlerDelete(link)} className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
+                  <FiTrash2 className="text-lg cursor-pointer" />
+                </button>
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">{link.originalUrl}</p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

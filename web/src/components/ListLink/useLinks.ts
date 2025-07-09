@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
 
-type LinkItem = {
+export type LinkItem = {
   id: string;
   shortUrl: string;
   originalUrl: string;

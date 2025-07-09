@@ -1,9 +1,27 @@
 import { FiCopy, FiDownload, FiTrash2 } from "react-icons/fi";
-import { useUrls } from "./useLinks";
+import { useUrls, type LinkItem } from "./useLinks";
 import Loading from "../Loading";
+import { useMutation } from "@tanstack/react-query";
+import api from "../../services/api";
+import { toast } from "react-toastify";
+import { queryClient } from "../../lib/react-query";
 
 export default function ListLink() {
   const { data, isLoading, error } = useUrls();
+
+  const mutation = useMutation({
+    mutationFn: async (data: LinkItem) => {
+      return await api.delete(`links/${data.shortUrl}`)
+    },
+    onSuccess: () => {
+      toast.success('Link deletado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['list-urls'] });
+    },
+    onError: (error: any) => {
+      console.log(error)
+      toast.error(error.response?.data.error || 'Erro ao excluir o link. Por favor, tente novamente.');
+    },
+  });
 
   if (isLoading) return (
     <div className="w-full bg-white py-3 rounded-md font-semibold transition">
@@ -11,6 +29,10 @@ export default function ListLink() {
     </div>
   );
   if (error) return <p>Erro ao buscar os LINKS.</p>;
+
+  const handlerDelete = (link: LinkItem) => {
+    mutation.mutate(link);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6 md:w-2/3">
@@ -40,7 +62,7 @@ export default function ListLink() {
               <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-600">
                 <FiCopy className="text-lg" />
               </button>
-              <button className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
+              <button onClick={() => handlerDelete(link)} className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
                 <FiTrash2 className="text-lg" />
               </button>
             </div>

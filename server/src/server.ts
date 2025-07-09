@@ -31,8 +31,13 @@ export function buildServer() {
 		return reply.status(500).send({ error: "Internal server error A." });
 	});
 
-	app.register(fastifyCors, { origin: "*" });
-	// Registra suas rotas aqui
+	//app.register(fastifyCors, { origin: "*" });
+	app.register(fastifyCors, {
+		origin: (origin, cb) => {
+			cb(null, true);
+		},
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+	});
 	app.register(indexRoute);
 	app.register(linksRoute);
 

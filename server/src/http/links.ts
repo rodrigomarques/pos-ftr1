@@ -21,6 +21,15 @@ export async function saveLink(
 	try {
 		const generatedShortCode = shortCode ?? generateRandomCode()
 
+		const result = await db
+			.select()
+			.from(schema.links)
+			.where(eq(schema.links.shortUrl, generatedShortCode))
+
+		if (result.length > 0) {
+			return reply.status(404).send(JSON.stringify({ error: "LINK já existente" }))
+		}
+
 		const linkDb = await db.insert(schema.links).values({
 			originalUrl: url,
 			shortUrl: generatedShortCode,

@@ -5,9 +5,11 @@ import { useMutation } from "@tanstack/react-query";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import { queryClient } from "../../lib/react-query";
+import { useState } from "react";
 
 export default function ListLink() {
   const { data, isLoading, error } = useUrls();
+  const [isRemoveLoading, setRemoveLoading] = useState<boolean>(false);
 
   const mutation = useMutation({
     mutationFn: async (data: LinkItem) => {
@@ -17,6 +19,7 @@ export default function ListLink() {
       toast.success('Link deletado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['list-urls'] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       console.log(error)
       toast.error(error.response?.data.error || 'Erro ao excluir o link. Por favor, tente novamente.');
@@ -34,11 +37,47 @@ export default function ListLink() {
     mutation.mutate(link);
   };
 
+  const hanlderExport = async () => {
+    try {
+      setRemoveLoading(true)
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      const result = await api.get(`links/export`)
+      if (!result.data || !result.data.url) {
+        setRemoveLoading(false)
+        toast.error('Nenhum link encontrado para exportar.');
+        return
+      }
+
+      const link = result.data.url;
+      console.log(link)
+      if (!link) {
+        setRemoveLoading(false)
+        toast.error('Erro ao gerar o link de exportação.');
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = link;
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setRemoveLoading(false)
+    } catch (error) {
+      setRemoveLoading(false)
+      console.error('Erro ao exportar links:', error);
+      toast.error('Erro ao exportar links. Por favor, tente novamente.');
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6 md:w-2/3">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Meus links</h2>
-        <button className="flex bg-gray-200 p-2  items-center gap-2 text-gray-800 hover:text-indigo-800">
+        <button
+          onClick={() => hanlderExport()}
+          className="flex bg-gray-200 p-2 items-center gap-2 text-gray-800 hover:text-indigo-400 cursor-pointer"
+        >
+          {isRemoveLoading && <Loading classValues="!text-indigo-400" label="" />}
           <FiDownload className="text-lg" />
           <span>Exportar</span>
         </button>
@@ -52,18 +91,18 @@ export default function ListLink() {
       )}
 
       {data && data.map((link) => (
-        <div className="mb-6 pb-6 border-b border-gray-200">
+        <div className="mb-6 pb-6 border-b border-gray-200" key={link.id}>
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-medium text-indigo-600">brev.ly/{link.shortUrl}</h3>
             <div className="flex gap-2 items-center">
               <div className="text-sm text-gray-500 mr-3">
                 <span>{countAcessos(link.accessCount)}</span>
               </div>
-              <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-600">
-                <FiCopy className="text-lg" />
+              <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-400">
+                <FiCopy className="text-lg cursor-pointer" />
               </button>
               <button onClick={() => handlerDelete(link)} className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
-                <FiTrash2 className="text-lg" />
+                <FiTrash2 className="text-lg cursor-pointer" />
               </button>
             </div>
           </div>

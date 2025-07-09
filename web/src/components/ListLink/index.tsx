@@ -1,6 +1,17 @@
 import { FiCopy, FiDownload, FiTrash2 } from "react-icons/fi";
+import { useUrls } from "./useLinks";
+import Loading from "../Loading";
 
 export default function ListLink() {
+  const { data, isLoading, error } = useUrls();
+
+  if (isLoading) return (
+    <div className="w-full bg-white py-3 rounded-md font-semibold transition">
+      <Loading label="Carregando links" classValues="!text-indigo-600" />
+    </div>
+  );
+  if (error) return <p>Erro ao buscar os LINKS.</p>;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6 md:w-2/3">
       <div className="flex justify-between items-center mb-6">
@@ -11,78 +22,39 @@ export default function ListLink() {
         </button>
       </div>
 
-      {/* Link 1 */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-medium text-indigo-600">brev.ly/Portfolio-Dev</h3>
-          <div className="flex gap-2 items-center">
-            <div className="text-sm text-gray-500 mr-3">
-              <span>347 acessos</span>
+      {data && data.length === 0 && (
+        <div className="text-center text-gray-500">
+          <p className="mb-4">Nenhum link encontrado.</p>
+          <p className="text-sm">Crie um novo link para começar.</p>
+        </div>
+      )}
+
+      {data && data.map((link) => (
+        <div className="mb-6 pb-6 border-b border-gray-200">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-lg font-medium text-indigo-600">brev.ly/{link.shortUrl}</h3>
+            <div className="flex gap-2 items-center">
+              <div className="text-sm text-gray-500 mr-3">
+                <span>{countAcessos(link.accessCount)}</span>
+              </div>
+              <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-600">
+                <FiCopy className="text-lg" />
+              </button>
+              <button className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
+                <FiTrash2 className="text-lg" />
+              </button>
             </div>
-            <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-600">
-              <FiCopy className="text-lg" />
-            </button>
-            <button className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
-              <FiTrash2 className="text-lg" />
-            </button>
           </div>
+          <p className="text-gray-600 mb-4">{link.originalUrl}</p>
         </div>
-        <p className="text-gray-600 mb-4">dexsite.portfolio.com.br/devname-123456</p>
-      </div>
-
-      {/* Link 2 */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-medium text-indigo-600">brev.ly/Linkedin-Profile</h3>
-          <div className="flex gap-2">
-            <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-600">
-              <FiCopy className="text-lg" />
-            </button>
-            <button className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
-              <FiTrash2 className="text-lg" />
-            </button>
-          </div>
-        </div>
-        <p className="text-gray-600 mb-4">linkedin.com/in/myp</p>
-        <div className="text-sm text-gray-500">
-          <span>18 acessos</span>
-        </div>
-      </div>
-
-      {/* Link 3 */}
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-medium text-indigo-600">brev.ly/Github-Project</h3>
-          <div className="flex gap-2">
-            <button className="text-gray-500 hover:text-indigo-600">
-              <FiCopy className="text-lg" />
-            </button>
-            <button className="text-gray-500 hover:text-red-600">
-              <FiTrash2 className="text-lg" />
-            </button>
-          </div>
-        </div>
-        <p className="text-gray-600 mb-4">github.com/devname/project-name-v2</p>
-      </div>
-
-      {/* Link 4 */}
-      <div className="mb-2">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-medium text-indigo-600">brev.ly/Figma-Encurtador-de-Links</h3>
-          <div className="flex gap-2">
-            <button className="text-gray-500 hover:text-indigo-600">
-              <FiCopy className="text-lg" />
-            </button>
-            <button className="text-gray-500 hover:text-red-600">
-              <FiTrash2 className="text-lg" />
-            </button>
-          </div>
-        </div>
-        <p className="text-gray-600 mb-4">figma.com/design/file/Encurtador-de-Links</p>
-        <div className="text-sm text-gray-500">
-          <span>53 acessos</span>
-        </div>
-      </div>
+      ))}
     </div>
   )
+}
+
+function countAcessos(acessos: number) {
+  if (acessos <= 1) {
+    return acessos + " acesso"
+  }
+  return acessos + " acessos"
 }

@@ -103,7 +103,14 @@ export default function ListLink() {
         {data && data.map((link) => (
           <div className="mb-6 pb-6 border-b border-gray-200" key={link.id}>
             <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-medium text-indigo-600">{env.VITE_FRONTEND_URL}{link.shortUrl}</h3>
+              <a
+                href={`${env.VITE_FRONTEND_URL}${link.shortUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-lg font-medium text-indigo-600 hover:underline cursor-pointer"
+              >
+                {env.VITE_FRONTEND_URL}{link.shortUrl}
+              </a>
               <div className="flex gap-2 items-center">
                 <div className="text-sm text-gray-500 mr-3">
                   <span>{countAcessos(link.accessCount)}</span>

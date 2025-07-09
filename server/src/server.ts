@@ -4,6 +4,7 @@ import {
 	hasZodFastifySchemaValidationErrors,
 	serializerCompiler,
 	validatorCompiler,
+	ZodTypeProvider
 } from "fastify-type-provider-zod";
 
 import { indexRoute } from "./routes/index.ts";
@@ -11,6 +12,8 @@ import { linksRoute } from "./routes/links.ts";
 
 export function buildServer() {
 	const app = fastify();
+	//const app = fastify().withTypeProvider<ZodTypeProvider>();
+
 
 	app.setValidatorCompiler(validatorCompiler);
 	app.setSerializerCompiler(serializerCompiler);
@@ -29,7 +32,6 @@ export function buildServer() {
 	});
 
 	app.register(fastifyCors, { origin: "*" });
-
 	// Registra suas rotas aqui
 	app.register(indexRoute);
 	app.register(linksRoute);

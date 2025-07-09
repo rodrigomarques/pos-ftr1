@@ -12,8 +12,8 @@ export const linkSchema = z.object({
   updatedAt: z.coerce.date(),
 })
 
-// Tipo TypeScript inferido
 export type Link = z.infer<typeof linkSchema>
+
 
 export const linksRoute: FastifyPluginAsyncZod = async (server) => {
   server.post(
@@ -21,14 +21,10 @@ export const linksRoute: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         summary: "Create Link Route",
-        body: z.object({
-          url: z.string().url(),
-          shortCode: z.string().optional(),
-        }),
         response: {
           201: z.object({
-            id: z.string().uuid(),
-            originalUrl: z.string().url(),
+            id: z.string(),
+            originalUrl: z.string(),
             shortCode: z.string(),
           }),
           400: z.object({

@@ -16,8 +16,9 @@ export async function saveLink(
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) {
+
+	const { url, shortCode } = createLinkSchema.parse(request.body)
 	try {
-		const { url, shortCode } = createLinkSchema.parse(request.body)
 		const generatedShortCode = shortCode ?? generateRandomCode()
 
 		const linkDb = await db.insert(schema.links).values({
@@ -29,16 +30,17 @@ export async function saveLink(
 		}).returning()
 
 		const link = linkDb[0]
-		return reply.code(201).send({
+		return reply.code(201).send(JSON.stringify({
 			id: link.id,
 			originalUrl: link.originalUrl,
 			shortCode: link.shortUrl
-		})
+		}))
+
 	} catch (error) {
 		console.error("Error saving link:", error);
-		return reply.status(500).send({
+		return reply.status(500).send(JSON.stringify({
 			error: "Internal Server Error AA " + error,
-		});
+		}));
 	}
 
 }
@@ -87,17 +89,17 @@ export async function getByShortCode(
 			.where(eq(schema.links.shortUrl, shortCode))
 
 		if (result.length === 0) {
-			return reply.status(404).send({ error: "Link not found" })
+			return reply.status(404).send(JSON.stringify({ error: "Link not found" }))
 		}
 
-		return reply.status(200).send({
+		return reply.status(200).send(JSON.stringify({
 			link: result[0],
-		})
+		}))
 	} catch (error) {
 		console.error("Error saving link:", error);
-		return reply.status(500).send({
+		return reply.status(500).send(JSON.stringify({
 			error: "Internal Server Error AA " + error,
-		});
+		}));
 	}
 
 }
@@ -112,14 +114,14 @@ export async function getAll(
 			.select()
 			.from(schema.links)
 
-		return reply.status(200).send({
+		return reply.status(200).send(JSON.stringify({
 			links: result,
-		})
+		}))
 	} catch (error) {
 		console.error("Error saving link:", error);
-		return reply.status(500).send({
+		return reply.status(500).send(JSON.stringify({
 			error: "Internal Server Error AA " + error,
-		});
+		}));
 	}
 
 }
@@ -140,7 +142,7 @@ export async function incrementCount(
 			.where(eq(schema.links.shortUrl, shortCode))
 
 		if (result.length === 0) {
-			return reply.status(404).send({ error: "Link not found" })
+			return reply.status(404).send(JSON.stringify({ error: "Link not found" }))
 		}
 
 		const updated = await db
@@ -152,15 +154,15 @@ export async function incrementCount(
 			.where(eq(schema.links.id, result[0].id))
 			.returning()
 
-		return reply.status(200).send({
+		return reply.status(200).send(JSON.stringify({
 			link: updated[0],
-		})
+		}))
 
 	} catch (error) {
 		console.error("Error saving link:", error);
-		return reply.status(500).send({
+		return reply.status(500).send(JSON.stringify({
 			error: "Internal Server Error AA " + error,
-		});
+		}));
 	}
 
 }
@@ -218,15 +220,15 @@ export async function exportLinks(
 
 		const [{ url }] = await Promise.all([uploadToStorage, convertToCSVPipeline]);
 
-		return reply.status(200).send({
+		return reply.status(200).send(JSON.stringify({
 			url: url,
-		})
+		}))
 
 	} catch (error) {
 		console.error("Error saving link:", error);
-		return reply.status(500).send({
+		return reply.status(500).send(JSON.stringify({
 			error: "Internal Server Error AA " + error,
-		});
+		}));
 	}
 
 }

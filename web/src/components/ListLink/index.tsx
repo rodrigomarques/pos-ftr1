@@ -6,6 +6,7 @@ import api from "../../services/api";
 import { toast } from "react-toastify";
 import { queryClient } from "../../lib/react-query";
 import { useState } from "react";
+import { env } from "../../env";
 
 export default function ListLink() {
   const { data, isLoading, error } = useUrls();
@@ -34,7 +35,9 @@ export default function ListLink() {
   if (error) return <p>Erro ao buscar os LINKS.</p>;
 
   const handlerDelete = (link: LinkItem) => {
-    mutation.mutate(link);
+    if (confirm('Você tem certeza que deseja excluir este link?')) {
+      mutation.mutate(link);
+    }
   };
 
   const hanlderExport = async () => {
@@ -93,12 +96,18 @@ export default function ListLink() {
       {data && data.map((link) => (
         <div className="mb-6 pb-6 border-b border-gray-200" key={link.id}>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-medium text-indigo-600">brev.ly/{link.shortUrl}</h3>
+            <h3 className="text-lg font-medium text-indigo-600">{env.VITE_FRONTEND_URL}{link.shortUrl}</h3>
             <div className="flex gap-2 items-center">
               <div className="text-sm text-gray-500 mr-3">
                 <span>{countAcessos(link.accessCount)}</span>
               </div>
-              <button className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-400">
+              <button
+                className="bg-gray-200 p-2 text-gray-800 hover:text-indigo-400"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${env.VITE_FRONTEND_URL}${link.shortUrl}`);
+                  toast.success('Link copiado para a área de transferência!');
+                }}
+              >
                 <FiCopy className="text-lg cursor-pointer" />
               </button>
               <button onClick={() => handlerDelete(link)} className="bg-gray-200 p-2 text-gray-800 hover:text-red-600">
